@@ -1,1 +1,48 @@
-# course_description
+# Course description 
+=======================
+* Plugin type:    ressource
+* Maintained by:  Flotter Totte
+* Copyright:      emeneo
+
+
+[Short description]
+
+
+Description
+===========
+[Description]
+
+
+Installation
+============
+[Installation]
+
+
+Requirements
+------------
+[Requirements]
+
+
+How to install
+--------------
+[How to install]
+
+
+Useful links
+============
+* Moodle Forum: [link to moodle forum]
+* Moodle Plugins Directory:  [link to moodle plugins directory]
+
+
+Roadmap
+=======
+[roadmap]
+
+Release history
+===============
+[release history]
+
+
+
+
+
