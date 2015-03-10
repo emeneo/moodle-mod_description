@@ -1,4 +1,4 @@
-# Course description 
+# Course description plugin
 =======================
 * Plugin type:    Ressource
 * Moodle Version: 2.8
