@@ -17,17 +17,17 @@
 
 /**
  * @package    mod
- * @subpackage label
- * @copyright  2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
+ * @subpackage description
+ * @copyright  emeneo
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 /**
- * Define all the backup steps that will be used by the backup_label_activity_task
+ * Define all the backup steps that will be used by the backup_description_activity_task
  */
 
 /**
- * Define the complete label structure for backup, with file and id annotations
+ * Define the complete description structure for backup, with file and id annotations
  */
 class backup_description_activity_structure_step extends backup_activity_structure_step {
 
@@ -52,7 +52,7 @@ class backup_description_activity_structure_step extends backup_activity_structu
         // Define file annotations
         $description->annotate_files('mod_description', 'intro', null); // This file area hasn't itemid
 
-        // Return the root element (label), wrapped into standard activity structure
+        // Return the root element (description), wrapped into standard activity structure
         return $this->prepare_activity_structure($description);
     }
 }

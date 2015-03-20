@@ -16,11 +16,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Add label form
+ * Add description form
  *
  * @package    mod
- * @subpackage label
- * @copyright  2006 Jamie Pratt
+ * @subpackage description
+ * @copyright  emeneo
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -48,16 +48,11 @@ class mod_description_mod_form extends moodleform_mod {
         $course_summary = str_replace('@@PLUGINFILE@@', $CFG->wwwroot.'/pluginfile.php/'.$context->id.'/course/summary/', $course_summary);
         $course_summary = str_replace('text-align: center;', 'text-align: left;', $course_summary);
 
-    	$this->current->introeditor['text'] = '<link rel="stylesheet" type="text/css" href="'.$CFG->wwwroot.'/mod/description/static/style.css"><div class="course_description"><h1>'.$course->fullname.'</h1>'.$course->summary.'</div>';
+    	$this->current->introeditor['text'] = '';
         $mform = $this->_form;
 
-        $mform->addElement('editor', 'introeditor', 'Course description', array('rows' => 10), array('maxfiles' => EDITOR_UNLIMITED_FILES,
-            'noclean' => true, 'context' => $this->context, 'collapsed' => true));
-        $mform->setType('introeditor', PARAM_RAW); // no XSS prevention here, users must be trusted
-        
         $mform->addElement('html', '<script src="'.$CFG->wwwroot.'/mod/description/static/jquery.min.js"></script>');
         $mform->addElement('html', '<link rel="stylesheet" type="text/css" href="'.$CFG->wwwroot.'/mod/description/static/style.css">');
-        $mform->addElement('html', '<script>$(document).ready(function(){$(".fitem_feditor").hide();});</script>');
 
         $mform->addElement('html', '<div class="course_description"><h1>'.$course->fullname.'</h1>'.$course_summary.'</div>');
 

@@ -16,11 +16,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Library of functions and constants for module label
+ * Library of functions and constants for module description
  *
  * @package    mod
- * @subpackage label
- * @copyright  2003 onwards Martin Dougiamas  {@link http://moodle.com}
+ * @subpackage description
+ * @copyright  emeneo
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

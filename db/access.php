@@ -15,10 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Capability definitions for the label module.
+ * Capability definitions for the description module.
  *
- * @package    mod_label
- * @copyright  2012 The Open University
+ * @package    mod_description
+ * @copyright  emeneo
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or late
  */
 

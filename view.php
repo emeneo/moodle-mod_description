@@ -16,18 +16,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Label module
+ * Description module
  *
  * @package    mod
- * @subpackage label
- * @copyright  2003 onwards Martin Dougiamas  {@link http://moodle.com}
+ * @subpackage description
+ * @copyright  emeneo
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once("../../config.php");
-
 $id = optional_param('id',0,PARAM_INT);    // Course Module ID, or
-$l = optional_param('l',0,PARAM_INT);     // Label ID
+$l = optional_param('l',0,PARAM_INT);     // description ID
 
 if ($id) {
     $PAGE->set_url('/mod/description/index.php', array('id'=>$id));
@@ -57,7 +56,6 @@ if ($id) {
 }
 
 require_login($course, true, $cm);
-
 redirect("$CFG->wwwroot/course/view.php?id=$course->id");
 
 

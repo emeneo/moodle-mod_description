@@ -16,16 +16,16 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Label module upgrade
+ * Description module upgrade
  *
  * @package    mod
- * @subpackage label
- * @copyright  2006 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
+ * @subpackage description
+ * @copyright  emeneo
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 // This file keeps track of upgrades to
-// the label module
+// the description module
 //
 // Sometimes, changes between versions involve
 // alterations to database structures and other

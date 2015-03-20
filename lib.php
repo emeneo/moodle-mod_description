@@ -16,28 +16,29 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Library of functions and constants for module label
+ * Library of functions and constants for module description
  *
  * @package    mod
- * @subpackage label
- * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
+ * @subpackage description
+ * @copyright  emeneo
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
 
-/** LABEL_MAX_NAME_LENGTH = 50 */
+/** DESCRIPTION_MAX_NAME_LENGTH = 50 */
 define("DESCRIPTION_MAX_NAME_LENGTH", 50);
-sync_course_info();
+//sync_course_info();
 /**
  * @uses DESCRIPTION_MAX_NAME_LENGTH
  * @param object $desc
  * @return string
  */
 function get_description_name($desc) {
-    $name = strip_tags(format_string($desc->intro,true));
-    if (textlib::strlen($name) > DESCRIPTION_MAX_NAME_LENGTH) {
-        $name = textlib::substr($name, 0, DESCRIPTION_MAX_NAME_LENGTH)."...";
+    //$name = strip_tags(format_string($desc->intro,true));
+    $name = time();
+    if (core_text::strlen($name) > DESCRIPTION_MAX_NAME_LENGTH) {
+        $name = core_text::substr($name, 0, DESCRIPTION_MAX_NAME_LENGTH)."...";
     }
 
     if (empty($name)) {
@@ -80,6 +81,7 @@ function description_update_instance($desc) {
 
     $desc->name = get_description_name($desc);
     $desc->timemodified = time();
+    $desc->intro = '';
     $desc->id = $desc->instance;
 
     return $DB->update_record("description", $desc);
@@ -97,13 +99,13 @@ function description_update_instance($desc) {
 function description_delete_instance($id) {
     global $DB;
 
-    if (! $label = $DB->get_record("description", array("id"=>$id))) {
+    if (! $description = $DB->get_record("description", array("id"=>$id))) {
         return false;
     }
 
     $result = true;
 
-    if (! $DB->delete_records("description", array("id"=>$label->id))) {
+    if (! $DB->delete_records("description", array("id"=>$description->id))) {
         $result = false;
     }
 
@@ -121,17 +123,31 @@ function description_delete_instance($id) {
  * @return cached_cm_info|null
  */
 function description_get_coursemodule_info($coursemodule) {
-    global $DB;
+    global $DB,$CFG;
 
-    if ($desc = $DB->get_record('description', array('id'=>$coursemodule->instance), 'id, name, intro, introformat')) {
+    if ($desc = $DB->get_record('description', array('id'=>$coursemodule->instance), 'id, name, intro, introformat, course')) {
         if (empty($desc->name)) {
-            // label name missing, fix it
+            // description name missing, fix it
             $desc->name = "description{$desc->id}";
             $DB->set_field('description', 'name', $desc->name, array('id'=>$desc->id));
         }
         $info = new cached_cm_info();
+
+        $course = $DB->get_record("course", array("id"=>$desc->course));
         // no filtering hre because this info is cached and filtered later
-        $info->content = format_module_intro('description', $desc, $coursemodule->id, false);
+        $course_context = context_course::instance($desc->course, MUST_EXIST);
+
+        $summary = $course->summary;
+        $desc->intro = '<p><link rel="stylesheet" type="text/css" href="http://www.moodlev26.com/mod/description/static/style.css" /></p><div class="course_description"><h1><span lang="de" class="multilang">'.$course->fullname.'</span></h1>'.$summary.'</div>';
+
+        require_once("$CFG->libdir/filelib.php");
+        $module = 'description';
+        $activity = $desc;
+        $context = context_module::instance($coursemodule->id);
+        $options = array('noclean' => true, 'para' => false, 'filter' => false, 'context' => $context, 'overflowdiv' => true);
+        $intro = file_rewrite_pluginfile_urls($activity->intro, 'pluginfile.php', $course_context->id, 'course', 'summary', null);
+        $info->content = trim(format_text($intro, $activity->introformat, $options, null));
+
         $info->name  = $desc->name;
         return $info;
     } else {
@@ -190,7 +206,7 @@ function description_supports($feature) {
         case FEATURE_GROUPS:                  return false;
         case FEATURE_GROUPINGS:               return false;
         case FEATURE_GROUPMEMBERSONLY:        return true;
-        case FEATURE_MOD_INTRO:               return true;
+        case FEATURE_MOD_INTRO:               return false;
         case FEATURE_COMPLETION_TRACKS_VIEWS: return false;
         case FEATURE_GRADE_HAS_GRADE:         return false;
         case FEATURE_GRADE_OUTCOMES:          return false;
@@ -201,14 +217,7 @@ function description_supports($feature) {
         default: return null;
     }
 }
-/*
-function getmicrotime(){ 
-    list($usec, $sec) = explode(" ",microtime()); 
-    $time = ((float)$usec+(float)$sec)*10000;
 
-    return $time;
-} 
-*/
 /**
  * Register the ability to handle drag and drop file uploads
  * @return array containing details of the files / types the mod can handle
@@ -250,7 +259,7 @@ function description_dndupload_handle($uploadinfo) {
     $data->introformat = FORMAT_HTML;
     $data->coursemodule = $uploadinfo->coursemodule;
 
-    // Extract the first (and only) file from the file area and add it to the label as an img tag.
+    // Extract the first (and only) file from the file area and add it to the description as an img tag.
     if (!empty($uploadinfo->draftitemid)) {
         $fs = get_file_storage();
         $draftcontext = context_user::instance($USER->id);
@@ -284,7 +293,7 @@ function description_dndupload_handle($uploadinfo) {
  * @param stored_file $file the image file to process
  * @param int $maxwidth the maximum width allowed for the image
  * @param int $maxheight the maximum height allowed for the image
- * @return string HTML fragment to add to the label
+ * @return string HTML fragment to add to the description
  */
 function description_generate_resized_image(stored_file $file, $maxwidth, $maxheight) {
     global $CFG;
@@ -314,7 +323,7 @@ function description_generate_resized_image(stored_file $file, $maxwidth, $maxhe
             $mimetype = $file->get_mimetype();
             if ($mimetype === 'image/gif' or $mimetype === 'image/jpeg' or $mimetype === 'image/png') {
                 require_once($CFG->libdir.'/gdlib.php');
-                $tmproot = make_temp_directory('mod_label');
+                $tmproot = make_temp_directory('mod_description');
                 $tmpfilepath = $tmproot.'/'.$file->get_contenthash();
                 $file->copy_content_to($tmpfilepath);
                 $data = generate_image_thumbnail($tmpfilepath, $width, $height);
@@ -350,25 +359,5 @@ function description_generate_resized_image(stored_file $file, $maxwidth, $maxhe
         return html_writer::link($link, $img);
     } else {
         return $img;
-    }
-}
-
-function sync_course_info(){
-    global $DB,$CFG;
-
-    $descriptions = $DB->get_records("description");
-    foreach ($descriptions as $description) {
-        $courseId = $description->course;
-        $course = $DB->get_record("course", array("id"=>$courseId));
-        $context = context_course::instance($course->id, MUST_EXIST);
-
-        $course_summary = $course->summary;
-        $course_summary = str_replace('@@PLUGINFILE@@', $CFG->wwwroot.'/pluginfile.php/'.$context->id.'/course/summary/', $course_summary);
-
-        $desc = '<link rel="stylesheet" type="text/css" href="'.$CFG->wwwroot.'/mod/description/static/style.css"><div class="course_description"><h1>'.$course->fullname.'</h1>'.$course_summary.'</div>';
-
-        $description->intro = $desc;
-        $DB->update_record('description',$description);
-        rebuild_course_cache($course->id);
     }
 }

@@ -18,7 +18,7 @@
 /**
  * @package moodlecore
  * @subpackage backup-moodle2
- * @copyright 2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
+ * @copyright emeneo
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -27,7 +27,7 @@
  */
 
 /**
- * Structure step to restore one label activity
+ * Structure step to restore one description activity
  */
 class restore_description_activity_structure_step extends restore_activity_structure_step {
 
@@ -47,14 +47,14 @@ class restore_description_activity_structure_step extends restore_activity_struc
         $oldid = $data->id;
         $data->course = $this->get_courseid();
 
-        // insert the label record
+        // insert the description record
         $newitemid = $DB->insert_record('description', $data);
         // immediately after inserting "activity" record, call this
         $this->apply_activity_instance($newitemid);
     }
 
     protected function after_execute() {
-        // Add label related files, no need to match by itemname (just internally handled context)
+        // Add description related files, no need to match by itemname (just internally handled context)
         $this->add_related_files('mod_description', 'intro', null);
     }
 

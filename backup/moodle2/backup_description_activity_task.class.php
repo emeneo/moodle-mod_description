@@ -16,11 +16,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Defines backup_label_activity_task class
+ * Defines backup_description_activity_task class
  *
- * @package     mod_label
+ * @package     mod_description
  * @category    backup
- * @copyright   2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
+ * @copyright   emeneo
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -29,7 +29,7 @@ defined('MOODLE_INTERNAL') || die;
 require_once($CFG->dirroot . '/mod/description/backup/moodle2/backup_description_stepslib.php');
 
 /**
- * Provides the steps to perform one complete backup of the Label instance
+ * Provides the steps to perform one complete backup of the description instance
  */
 class backup_description_activity_task extends backup_activity_task {
 
@@ -40,7 +40,7 @@ class backup_description_activity_task extends backup_activity_task {
     }
 
     /**
-     * Defines a backup step to store the instance data in the label.xml file
+     * Defines a backup step to store the instance data in the description.xml file
      */
     protected function define_my_steps() {
         $this->add_step(new backup_description_activity_structure_step('description_structure', 'description.xml'));

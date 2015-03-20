@@ -18,7 +18,7 @@
 /**
  * @package moodlecore
  * @subpackage backup-moodle2
- * @copyright 2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
+ * @copyright emeneo
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/mod/description/backup/moodle2/restore_description_stepslib.php'); // Because it exists (must)
 
 /**
- * label restore task that provides all the settings and steps to perform one
+ * description restore task that provides all the settings and steps to perform one
  * complete restore of the activity
  */
 class restore_description_activity_task extends restore_activity_task {
@@ -43,7 +43,7 @@ class restore_description_activity_task extends restore_activity_task {
      * Define (add) particular steps this activity can have
      */
     protected function define_my_steps() {
-        // label only has one structure step
+        // description only has one structure step
         $this->add_step(new restore_description_activity_structure_step('description_structure', 'description.xml'));
     }
 
@@ -70,7 +70,7 @@ class restore_description_activity_task extends restore_activity_task {
     /**
      * Define the restore log rules that will be applied
      * by the {@link restore_logs_processor} when restoring
-     * label logs. It must return one array
+     * description logs. It must return one array
      * of {@link restore_log_rule} objects
      */
     static public function define_restore_log_rules() {
