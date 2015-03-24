@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -36,7 +35,7 @@ class restore_description_activity_structure_step extends restore_activity_struc
         $paths = array();
         $paths[] = new restore_path_element('description', '/activity/description');
 
-        // Return the paths wrapped into standard activity structure
+        /*Return the paths wrapped into standard activity structure*/
         return $this->prepare_activity_structure($paths);
     }
 
@@ -47,14 +46,14 @@ class restore_description_activity_structure_step extends restore_activity_struc
         $oldid = $data->id;
         $data->course = $this->get_courseid();
 
-        // insert the description record
+        /*insert the description record*/
         $newitemid = $DB->insert_record('description', $data);
-        // immediately after inserting "activity" record, call this
+        /*immediately after inserting "activity" record, call this*/
         $this->apply_activity_instance($newitemid);
     }
 
     protected function after_execute() {
-        // Add description related files, no need to match by itemname (just internally handled context)
+        /*Add description related files, no need to match by itemname (just internally handled context)*/
         $this->add_related_files('mod_description', 'intro', null);
     }
 

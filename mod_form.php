@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -26,41 +25,32 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-require_once ($CFG->dirroot.'/course/moodleform_mod.php');
+require_once($CFG->dirroot.'/course/moodleform_mod.php');
+require_once("$CFG->libdir/filelib.php");
 
 class mod_description_mod_form extends moodleform_mod {
+    public function definition() {
+        global $CFG, $DB;
+        if (@$_GET['update'] != '') {
+            $update = $_GET['update'];
+            $cm = get_coursemodule_from_id('', $update, 0, false, MUST_EXIST);
+            $courseid = $cm->course;
+        } else {
+            $courseid = $_REQUEST['course'];
+        }
+        $course = $DB->get_record("course", array("id" => $courseid));
 
-    function definition() {
-    	global $DB,$CFG;
+        $context = context_course::instance($courseid, MUST_EXIST);
+        $coursesummary = file_rewrite_pluginfile_urls($course->summary, 'pluginfile.php', $context->id, 'course', 'summary', null);
 
-    	if(@$_GET['update']){
-    		$update = $_GET['update'];
-    		$cm = get_coursemodule_from_id('', $update, 0, false, MUST_EXIST);
-    		$courseId = $cm->course;
-    	}else{
-    		$courseId = $_REQUEST['course'];
-    	}
-    	
-    	$course = $DB->get_record("course", array("id"=>$courseId));
-
-        $context = context_course::instance($courseId, MUST_EXIST);
-        $course_summary = $course->summary;
-        $course_summary = str_replace('@@PLUGINFILE@@', $CFG->wwwroot.'/pluginfile.php/'.$context->id.'/course/summary/', $course_summary);
-        $course_summary = str_replace('text-align: center;', 'text-align: left;', $course_summary);
-
-    	$this->current->introeditor['text'] = '';
+        $this->current->introeditor['text'] = '';
         $mform = $this->_form;
 
         $mform->addElement('html', '<script src="'.$CFG->wwwroot.'/mod/description/static/jquery.min.js"></script>');
-        $mform->addElement('html', '<link rel="stylesheet" type="text/css" href="'.$CFG->wwwroot.'/mod/description/static/style.css">');
-
-        $mform->addElement('html', '<div class="course_description"><h1>'.$course->fullname.'</h1>'.$course_summary.'</div>');
-
+        $stylehtml = '<link rel="stylesheet" type="text/css" href="'.$CFG->wwwroot.'/mod/description/static/style.css">';
+        $mform->addElement('html', $stylehtml);
+        $mform->addElement('html', '<div class="course_description"><h1>'.$course->fullname.'</h1>'.$coursesummary.'</div>');
         $this->standard_coursemodule_elements();
-//-------------------------------------------------------------------------------
-// buttons
         $this->add_action_buttons(true, false, null);
-
     }
-
 }

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -26,24 +25,24 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-/** DESCRIPTION_MAX_NAME_LENGTH = 50 */
+/* DESCRIPTION_MAX_NAME_LENGTH = 50 */
 define("DESCRIPTION_MAX_NAME_LENGTH", 50);
-//sync_course_info();
+
+require_once("$CFG->libdir/filelib.php");
 /**
  * @uses DESCRIPTION_MAX_NAME_LENGTH
  * @param object $desc
  * @return string
  */
 function get_description_name($desc) {
-    //$name = strip_tags(format_string($desc->intro,true));
     $name = time();
     if (core_text::strlen($name) > DESCRIPTION_MAX_NAME_LENGTH) {
         $name = core_text::substr($name, 0, DESCRIPTION_MAX_NAME_LENGTH)."...";
     }
 
     if (empty($name)) {
-        // arbitrary name
-        $name = get_string('modulename','description');
+        /*arbitrary name*/
+        $name = get_string('modulename', 'description');
     }
 
     return $name;
@@ -99,13 +98,13 @@ function description_update_instance($desc) {
 function description_delete_instance($id) {
     global $DB;
 
-    if (! $description = $DB->get_record("description", array("id"=>$id))) {
+    if (! $description = $DB->get_record("description", array("id" => $id))) {
         return false;
     }
 
     $result = true;
 
-    if (! $DB->delete_records("description", array("id"=>$description->id))) {
+    if (! $DB->delete_records("description", array("id" => $description->id))) {
         $result = false;
     }
 
@@ -123,29 +122,29 @@ function description_delete_instance($id) {
  * @return cached_cm_info|null
  */
 function description_get_coursemodule_info($coursemodule) {
-    global $DB,$CFG;
+    global $DB, $CFG;
 
-    if ($desc = $DB->get_record('description', array('id'=>$coursemodule->instance), 'id, name, intro, introformat, course')) {
+    if ($desc = $DB->get_record('description', array('id' => $coursemodule->instance), 'id, name, intro, introformat, course')) {
         if (empty($desc->name)) {
-            // description name missing, fix it
+            /*description name missing, fix it*/
             $desc->name = "description{$desc->id}";
-            $DB->set_field('description', 'name', $desc->name, array('id'=>$desc->id));
+            $DB->set_field('description', 'name', $desc->name, array('id' => $desc->id));
         }
         $info = new cached_cm_info();
 
-        $course = $DB->get_record("course", array("id"=>$desc->course));
-        // no filtering hre because this info is cached and filtered later
-        $course_context = context_course::instance($desc->course, MUST_EXIST);
+        $course = $DB->get_record("course", array("id" => $desc->course));
+        /*no filtering hre because this info is cached and filtered later*/
+        $coursecontext = context_course::instance($desc->course, MUST_EXIST);
 
         $summary = $course->summary;
-        $desc->intro = '<p><link rel="stylesheet" type="text/css" href="http://www.moodlev26.com/mod/description/static/style.css" /></p><div class="course_description"><h1><span lang="de" class="multilang">'.$course->fullname.'</span></h1>'.$summary.'</div>';
+        $desc->intro = '<p><link rel="stylesheet" type="text/css" href="'.$CFG->wwwroot.'/mod/description/static/style.css" /></p>
+        <div class="course_description"><h1><span lang="de" class="multilang">'.$course->fullname.'</span></h1>'.$summary.'</div>';
 
-        require_once("$CFG->libdir/filelib.php");
         $module = 'description';
         $activity = $desc;
         $context = context_module::instance($coursemodule->id);
         $options = array('noclean' => true, 'para' => false, 'filter' => false, 'context' => $context, 'overflowdiv' => true);
-        $intro = file_rewrite_pluginfile_urls($activity->intro, 'pluginfile.php', $course_context->id, 'course', 'summary', null);
+        $intro = file_rewrite_pluginfile_urls($activity->intro, 'pluginfile.php', $coursecontext->id, 'course', 'summary', null);
         $info->content = trim(format_text($intro, $activity->introformat, $options, null));
 
         $info->name  = $desc->name;
@@ -201,20 +200,43 @@ function description_get_extra_capabilities() {
  * @return bool|null True if module supports feature, false if not, null if doesn't know
  */
 function description_supports($feature) {
-    switch($feature) {
-        case FEATURE_IDNUMBER:                return false;
-        case FEATURE_GROUPS:                  return false;
-        case FEATURE_GROUPINGS:               return false;
-        case FEATURE_GROUPMEMBERSONLY:        return true;
-        case FEATURE_MOD_INTRO:               return false;
-        case FEATURE_COMPLETION_TRACKS_VIEWS: return false;
-        case FEATURE_GRADE_HAS_GRADE:         return false;
-        case FEATURE_GRADE_OUTCOMES:          return false;
-        case FEATURE_MOD_ARCHETYPE:           return MOD_ARCHETYPE_RESOURCE;
-        case FEATURE_BACKUP_MOODLE2:          return true;
-        case FEATURE_NO_VIEW_LINK:            return true;
-
-        default: return null;
+    switch ($feature) {
+        case FEATURE_IDNUMBER:{
+            return false;
+        }
+        case FEATURE_GROUPS:{
+            return false;
+        }
+        case FEATURE_GROUPINGS:{
+            return false;
+        }
+        case FEATURE_GROUPMEMBERSONLY:{
+            return true;
+        }
+        case FEATURE_MOD_INTRO:{
+            return false;
+        }
+        case FEATURE_COMPLETION_TRACKS_VIEWS:{
+            return false;
+        }
+        case FEATURE_GRADE_HAS_GRADE:{
+            return false;
+        }
+        case FEATURE_GRADE_OUTCOMES:{
+            return false;
+        }
+        case FEATURE_MOD_ARCHETYPE:{
+            return MOD_ARCHETYPE_RESOURCE;
+        }
+        case FEATURE_BACKUP_MOODLE2:{
+            return true;
+        }
+        case FEATURE_NO_VIEW_LINK:{
+            return true;
+        }
+        default:{
+            return null;
+        }
     }
 }
 
@@ -251,7 +273,7 @@ function description_dndupload_register() {
 function description_dndupload_handle($uploadinfo) {
     global $USER;
 
-    // Gather the required info.
+    /*Gather the required info.*/
     $data = new stdClass();
     $data->course = $uploadinfo->course->id;
     $data->name = $uploadinfo->displayname;
@@ -259,7 +281,7 @@ function description_dndupload_handle($uploadinfo) {
     $data->introformat = FORMAT_HTML;
     $data->coursemodule = $uploadinfo->coursemodule;
 
-    // Extract the first (and only) file from the file area and add it to the description as an img tag.
+    /*Extract the first (and only) file from the file area and add it to the description as an img tag.*/
     if (!empty($uploadinfo->draftitemid)) {
         $fs = get_file_storage();
         $draftcontext = context_user::instance($USER->id);
@@ -267,11 +289,11 @@ function description_dndupload_handle($uploadinfo) {
         $files = $fs->get_area_files($draftcontext->id, 'user', 'draft', $uploadinfo->draftitemid, '', false);
         if ($file = reset($files)) {
             if (file_mimetype_in_typegroup($file->get_mimetype(), 'web_image')) {
-                // It is an image - resize it, if too big, then insert the img tag.
+                /*It is an image - resize it, if too big, then insert the img tag.*/
                 $config = get_config('description');
                 $data->intro = label_generate_resized_image($file, $config->dndresizewidth, $config->dndresizeheight);
             } else {
-                // We aren't supposed to be supporting non-image types here, but fallback to adding a link, just in case.
+                /*We aren't supposed to be supporting non-image types here, but fallback to adding a link, just in case.*/
                 $url = moodle_url::make_draftfile_url($file->get_itemid(), $file->get_filepath(), $file->get_filename());
                 $data->intro = html_writer::link($url, $file->get_filename());
             }
@@ -303,7 +325,7 @@ function description_generate_resized_image(stored_file $file, $maxwidth, $maxhe
     $attrib = array('alt' => $file->get_filename(), 'src' => $fullurl);
 
     if ($imginfo = $file->get_imageinfo()) {
-        // Work out the new width / height, bounded by maxwidth / maxheight
+        /*Work out the new width / height, bounded by maxwidth / maxheight*/
         $width = $imginfo['width'];
         $height = $imginfo['height'];
         if (!empty($maxwidth) && $width > $maxwidth) {
@@ -318,7 +340,7 @@ function description_generate_resized_image(stored_file $file, $maxwidth, $maxhe
         $attrib['width'] = $width;
         $attrib['height'] = $height;
 
-        // If the size has changed and the image is of a suitable mime type, generate a smaller version
+        /*If the size has changed and the image is of a suitable mime type, generate a smaller version*/
         if ($width != $imginfo['width']) {
             $mimetype = $file->get_mimetype();
             if ($mimetype === 'image/gif' or $mimetype === 'image/jpeg' or $mimetype === 'image/png') {
@@ -341,7 +363,7 @@ function description_generate_resized_image(stored_file $file, $maxwidth, $maxhe
                     );
                     $smallfile = $fs->create_file_from_string($record, $data);
 
-                    // Replace the image 'src' with the resized file and link to the original
+                    /*Replace the image 'src' with the resized file and link to the original*/
                     $attrib['src'] = moodle_url::make_draftfile_url($smallfile->get_itemid(), $smallfile->get_filepath(),
                                                                     $smallfile->get_filename());
                     $link = $fullurl;
@@ -350,7 +372,7 @@ function description_generate_resized_image(stored_file $file, $maxwidth, $maxhe
         }
 
     } else {
-        // Assume this is an image type that get_imageinfo cannot handle (e.g. SVG)
+        /*Assume this is an image type that get_imageinfo cannot handle (e.g. SVG)*/
         $attrib['width'] = $maxwidth;
     }
 

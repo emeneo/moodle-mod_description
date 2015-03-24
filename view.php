@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -25,29 +24,29 @@
  */
 
 require_once("../../config.php");
-$id = optional_param('id',0,PARAM_INT);    // Course Module ID, or
-$l = optional_param('l',0,PARAM_INT);     // description ID
+$id = optional_param('id', 0, PARAM_INT);/*Course Module ID, or*/
+$l = optional_param('l', 0, PARAM_INT);/*description ID*/
 
 if ($id) {
-    $PAGE->set_url('/mod/description/index.php', array('id'=>$id));
+    $PAGE->set_url('/mod/description/index.php', array('id' => $id));
     if (! $cm = get_coursemodule_from_id('label', $id)) {
         print_error('invalidcoursemodule');
     }
 
-    if (! $course = $DB->get_record("course", array("id"=>$cm->course))) {
+    if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
         print_error('coursemisconf');
     }
 
-    if (! $desc = $DB->get_record("description", array("id"=>$cm->instance))) {
+    if (! $desc = $DB->get_record("description", array("id" => $cm->instance))) {
         print_error('invalidcoursemodule');
     }
 
 } else {
-    $PAGE->set_url('/mod/description/index.php', array('l'=>$l));
-    if (! $desc = $DB->get_record("description", array("id"=>$l))) {
+    $PAGE->set_url('/mod/description/index.php', array('l' => $l));
+    if (! $desc = $DB->get_record("description", array("id" => $l))) {
         print_error('invalidcoursemodule');
     }
-    if (! $course = $DB->get_record("course", array("id"=>$desc->course)) ){
+    if (! $course = $DB->get_record("course", array("id" => $desc->course))) {
         print_error('coursemisconf');
     }
     if (! $cm = get_coursemodule_from_instance("description", $desc->id, $course->id)) {
