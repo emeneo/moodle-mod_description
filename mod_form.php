@@ -31,12 +31,13 @@ require_once("$CFG->libdir/filelib.php");
 class mod_description_mod_form extends moodleform_mod {
     public function definition() {
         global $CFG, $DB;
-        if (@$_GET['update'] != '') {
-            $update = $_GET['update'];
+
+        $update = optional_param('update', 0, PARAM_INT);
+        if (@$update != '') {
             $cm = get_coursemodule_from_id('', $update, 0, false, MUST_EXIST);
             $courseid = $cm->course;
         } else {
-            $courseid = $_REQUEST['course'];
+            $courseid = optional_param('course', 0, PARAM_INT);
         }
         $course = $DB->get_record("course", array("id" => $courseid));
 
