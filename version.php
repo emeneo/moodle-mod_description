@@ -15,19 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Label module version info
+ * Description module version info
  *
  * @package    mod
- * @subpackage label
- * @copyright  2003 onwards Martin Dougiamas  {@link http://moodle.com}
+ * @subpackage description
+ * @copyright  emeneo
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2015032400;       // The current module version (Date: YYYYMMDDXX)
-$plugin->requires  = 2013050100;    // Requires this Moodle version
-$plugin->maturity = MATURITY_STABLE;
-$plugin->release = 'Course description plugin 2.8a';
-$plugin->component = 'mod_description'; // Full name of the plugin (used for diagnostics)
-$plugin->cron      = 0;
+$module->version   = 2015040900;/*The current module version (Date: YYYYMMDDXX)*/
+$module->requires  = 2013050100;/*Requires this Moodle version*/
+$module->component = 'mod_description';/*Full name of the plugin (used for diagnostics)*/
+$module->cron      = 0;
