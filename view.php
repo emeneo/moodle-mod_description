@@ -29,7 +29,7 @@ $l = optional_param('l', 0, PARAM_INT);/*description ID*/
 
 if ($id) {
     $PAGE->set_url('/mod/description/index.php', array('id' => $id));
-    if (! $cm = get_coursemodule_from_id('label', $id)) {
+    if (! $cm = get_coursemodule_from_id('description', $id)) {
         print_error('invalidcoursemodule');
     }
 

@@ -29,10 +29,6 @@ $string['configdndresizewidth'] = 'When a course description is created from a d
 $string['dndmedia'] = 'Media drag and drop';
 $string['dndresizeheight'] = 'Resize drag and drop height';
 $string['dndresizewidth'] = 'Resize drag and drop width';
-$string['dnduploadlabel'] = 'Add image to course page';
-$string['dnduploadlabeltext'] = 'Add a course description to the course page';
-$string['label:addinstance'] = 'Add a new course description';
-$string['labeltext'] = 'course description text';
 $string['modulename'] = 'Course description';
 $string['modulename_help'] = 'The course description module enables text and multimedia to be inserted into the course page in between links to other resources and activities. course descriptions are very versatile and can help to improve the appearance of a course if used thoughtfully.
 
