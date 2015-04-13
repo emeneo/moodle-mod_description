@@ -44,7 +44,7 @@ function get_description_name($desc) {
         /*arbitrary name*/
         $name = get_string('modulename', 'description');
     }
-
+    $name = get_string('modulename', 'description');
     return $name;
 }
 /**
