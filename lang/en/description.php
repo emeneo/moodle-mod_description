@@ -41,3 +41,4 @@ $string['modulename_link'] = 'mod/description/view';
 $string['modulenameplural'] = 'Course description';
 $string['pluginadministration'] = 'Course description administration';
 $string['pluginname'] = 'Course description';
+$string['description:addinstance'] = 'Add a new course description';

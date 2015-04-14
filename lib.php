@@ -35,15 +35,6 @@ require_once("$CFG->libdir/filelib.php");
  * @return string
  */
 function get_description_name($desc) {
-    $name = time();
-    if (core_text::strlen($name) > DESCRIPTION_MAX_NAME_LENGTH) {
-        $name = core_text::substr($name, 0, DESCRIPTION_MAX_NAME_LENGTH)."...";
-    }
-
-    if (empty($name)) {
-        /*arbitrary name*/
-        $name = get_string('modulename', 'description');
-    }
     $name = get_string('modulename', 'description');
     return $name;
 }
