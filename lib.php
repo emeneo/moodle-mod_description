@@ -113,8 +113,7 @@ function description_delete_instance($id) {
  * @return cached_cm_info|null
  */
 function description_get_coursemodule_info($coursemodule) {
-    global $DB, $CFG;
-
+    global $DB, $CFG, $COURSE;
     if ($desc = $DB->get_record('description', array('id' => $coursemodule->instance), 'id, name, intro, introformat, course')) {
         if (empty($desc->name)) {
             /*description name missing, fix it*/
@@ -123,7 +122,8 @@ function description_get_coursemodule_info($coursemodule) {
         }
         $info = new cached_cm_info();
 
-        $course = $DB->get_record("course", array("id" => $desc->course));
+        //$course = $DB->get_record("course", array("id" => $desc->course));
+        $course = $COURSE;
         /*no filtering hre because this info is cached and filtered later*/
         $coursecontext = context_course::instance($desc->course, MUST_EXIST);
 
