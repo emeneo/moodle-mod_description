@@ -1,232 +1,389 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
-//
-// Moodle is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// Moodle is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /**
- * Library of functions and constants for module description
- *
- * @package    mod
- * @subpackage description
- * @copyright  emeneo
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+ * *************************************************************************
+ * *                  Apply	Enrol   				                      **
+ * *************************************************************************
+ * @copyright   emeneo.com                                                **
+ * @link        emeneo.com                                                **
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later  **
+ * *************************************************************************
+ * ************************************************************************
+*/
+class enrol_apply_plugin extends enrol_plugin {
 
-defined('MOODLE_INTERNAL') || die;
+	/**
+	* Add new instance of enrol plugin with default settings.
+	* @param object $course
+	* @return int id of new instance
+	*/
+	public function add_default_instance($course) {
+		$fields = array(
+		    'status'          => $this->get_config('status'),
+		    'roleid'          => $this->get_config('roleid', 0)
+		);
+		return $this->add_instance($course, $fields);
+	}
 
-/* DESCRIPTION_MAX_NAME_LENGTH = 50 */
-define("DESCRIPTION_MAX_NAME_LENGTH", 50);
+	public function allow_unenrol(stdClass $instance) {
+		// users with unenrol cap may unenrol other users manually manually
+		return true;
+	}
 
-require_once("$CFG->libdir/filelib.php");
-/**
- * @uses DESCRIPTION_MAX_NAME_LENGTH
- * @param object $desc
- * @return string
- */
-function get_description_name($desc) {
-    $name = get_string('modulename', 'description');
-    return $name;
-}
-/**
- * Given an object containing all the necessary data,
- * (defined by the form in mod_form.php) this function
- * will create a new instance and return the id number
- * of the new instance.
- *
- * @global object
- * @param object $desc
- * @return bool|int
- */
-function description_add_instance($desc) {
-    global $DB;
+	public function get_newinstance_link($courseid) {
+		$context =  context_course::instance($courseid, MUST_EXIST);
 
-    $desc->name = get_description_name($desc);
-    $desc->timemodified = time();
+		if (!has_capability('moodle/course:enrolconfig', $context) or !has_capability('enrol/manual:config', $context)) {
+			return NULL;
+		}
+		// multiple instances supported - different roles with different password
+		return new moodle_url('/enrol/apply/edit.php', array('courseid'=>$courseid));
+	}
 
-    return $DB->insert_record("description", $desc);
-}
+	public function enrol_page_hook(stdClass $instance) {
+		global $CFG, $OUTPUT, $SESSION, $USER, $DB;
 
-/**
- * Given an object containing all the necessary data,
- * (defined by the form in mod_form.php) this function
- * will update an existing instance with new data.
- *
- * @global object
- * @param object $desc
- * @return bool
- */
-function description_update_instance($desc) {
-    global $DB;
+		if (isguestuser()) {
+			// can not enrol guest!!
+			return null;
+		}
+		if ($DB->record_exists('user_enrolments', array('userid'=>$USER->id, 'enrolid'=>$instance->id))) {
+			//TODO: maybe we should tell them they are already enrolled, but can not access the course
+			//return null;
+			return $OUTPUT->notification(get_string('notification', 'enrol_apply'));
+		}
 
-    $desc->name = get_description_name($desc);
-    $desc->timemodified = time();
-    $desc->intro = '';
-    $desc->id = $desc->instance;
+		if ($instance->enrolstartdate != 0 and $instance->enrolstartdate > time()) {
+			//TODO: inform that we can not enrol yet
+			return null;
+		}
 
-    return $DB->update_record("description", $desc);
-}
+		if ($instance->enrolenddate != 0 and $instance->enrolenddate < time()) {
+			//TODO: inform that enrolment is not possible any more
+			return null;
+		}
 
-/**
- * Given an ID of an instance of this module,
- * this function will permanently delete the instance
- * and any data that depends on it.
- *
- * @global object
- * @param int $id
- * @return bool
- */
-function description_delete_instance($id) {
-    global $DB;
+		if ($instance->customint3 > 0) {
+			// max enrol limit specified
+			$count = $DB->count_records('user_enrolments', array('enrolid'=>$instance->id));
+			if ($count >= $instance->customint3) {
+				// bad luck, no more self enrolments here
+				return $OUTPUT->notification(get_string('maxenrolledreached', 'enrol_self'));
+			}
+		}
 
-    if (! $description = $DB->get_record("description", array("id" => $id))) {
-        return false;
+		require_once("$CFG->dirroot/enrol/apply/locallib.php");
+
+		$form = new enrol_apply_enrol_form(NULL, $instance);
+
+		$instanceid = optional_param('instance', 0, PARAM_INT);
+		if ($instance->id == $instanceid) {
+			if ($data = $form->get_data()) {
+				$userInfo = $data;
+				$applydescription = $userInfo->applydescription;
+				unset($userInfo->applydescription);
+				$userInfo->id = $USER->id;
+				$res = $DB->update_record('user',$userInfo);
+				//echo "<pre>";print_r($userInfo);exit;
+				//var_dump($res);exit;
+				$enrol = enrol_get_plugin('self');
+				$timestart = time();
+				if ($instance->enrolperiod) {
+					$timeend = $timestart + $instance->enrolperiod;
+				} else {
+					$timeend = 0;
+				}
+
+				$roleid = $instance->roleid;
+				if(!$roleid){
+					$role = $DB->get_record_sql("select * from ".$CFG->prefix."role where archetype='student' limit 1");
+					$roleid = $role->id;
+				}
+
+				$this->enrol_user($instance, $USER->id, $roleid, $timestart, $timeend,1);
+				sendConfirmMailToTeachers($instance->courseid, $instance->id, $data, $applydescription);
+				sendConfirmMailToManagers($instance->courseid,$data, $applydescription);
+				
+				add_to_log($instance->courseid, 'course', 'enrol', '../enrol/users.php?id='.$instance->courseid, $instance->courseid); //there should be userid somewhere!
+				redirect("$CFG->wwwroot/course/view.php?id=$instance->courseid");
+			}
+		}
+
+		ob_start();
+		$form->display();
+		$output = ob_get_clean();
+
+		return $OUTPUT->box($output);
+
+	}
+
+	public function get_action_icons(stdClass $instance) {
+		global $OUTPUT;
+
+		if ($instance->enrol !== 'apply') {
+			throw new coding_exception('invalid enrol instance!');
+		}
+		$context =  context_course::instance($instance->courseid);
+
+		$icons = array();
+
+		if (has_capability('enrol/manual:config', $context)) {
+            $editlink = new moodle_url("/enrol/apply/edit.php", array('courseid'=>$instance->courseid, 'id'=>$instance->id));
+            $icons[] = $OUTPUT->action_icon($editlink, new pix_icon('t/edit', get_string('edit'), 'core', array('class' => 'iconsmall')));
+        }
+
+		if (has_capability('enrol/manual:manage', $context)) {
+			$managelink = new moodle_url("/enrol/apply/apply.php", array('id'=>$_GET['id'],'enrolid'=>$instance->id));
+			$icons[] = $OUTPUT->action_icon($managelink, new pix_icon('i/users', get_string('confirmenrol', 'enrol_apply'), 'core', array('class'=>'iconsmall')));
+		}
+
+		if (has_capability("enrol/manual:enrol", $context)) {
+			$enrollink = new moodle_url("/enrol/apply/enroluser.php", array('enrolid'=>$instance->id));
+			$icons[] = $OUTPUT->action_icon($enrollink, new pix_icon('t/enrolusers', get_string('enrolusers', 'enrol_apply'), 'core', array('class'=>'iconsmall')));
+		}
+		
+		return $icons;
+	}
+
+       /**
+ 	* Is it possible to hide/show enrol instance via standard UI?
+ 	*
+ 	* @param stdClass $instance
+ 	* @return bool
+ 	*/
+	public function can_hide_show_instance($instance) {
+    		$context = context_course::instance($instance->courseid);
+    		return has_capability('enrol/apply:config', $context);
+	}
+	
+	/**
+ 	* Is it possible to delete enrol instance via standard UI?
+ 	*
+ 	* @param stdClass $instance
+ 	* @return bool
+ 	*/
+ 	
+	public function can_delete_instance($instance) {
+    		$context = context_course::instance($instance->courseid);
+    		return has_capability('enrol/apply:config', $context);
+	}
+	
+	
+	/**
+     	* Sets up navigation entries.
+     	*
+     	* @param stdClass $instancesnode
+     	* @param stdClass $instance
+     	* @return void
+     	*/
+    	public function add_course_navigation($instancesnode, stdClass $instance) {
+        if ($instance->enrol !== 'apply') {
+             throw new coding_exception('Invalid enrol instance type!');
+        }
+
+        $context = context_course::instance($instance->courseid);
+        if (has_capability('enrol/apply:config', $context)) {
+            $managelink = new moodle_url('/enrol/apply/edit.php', array('courseid'=>$instance->courseid, 'id'=>$instance->id));
+            $instancesnode->add($this->get_instance_name($instance), $managelink, navigation_node::TYPE_SETTING);
+        }
     }
 
-    $result = true;
-
-    if (! $DB->delete_records("description", array("id" => $description->id))) {
-        $result = false;
-    }
-
-    return $result;
+	public function get_user_enrolment_actions(course_enrolment_manager $manager, $ue) {
+		$actions = array();
+		$context = $manager->get_context();
+		$instance = $ue->enrolmentinstance;
+		$params = $manager->get_moodlepage()->url->params();
+		$params['ue'] = $ue->id;
+		if ($this->allow_unenrol($instance) && has_capability("enrol/apply:unenrol", $context)) {
+			$url = new moodle_url('/enrol/apply/unenroluser.php', $params);
+			$actions[] = new user_enrolment_action(new pix_icon('t/delete', ''), get_string('unenrol', 'enrol'), $url, array('class'=>'unenrollink', 'rel'=>$ue->id));
+		}
+		if ($this->allow_manage($instance) && has_capability("enrol/apply:manage", $context)) {
+			$url = new moodle_url('/enrol/apply/editenrolment.php', $params);
+			$actions[] = new user_enrolment_action(new pix_icon('t/edit', ''), get_string('edit'), $url, array('class'=>'editenrollink', 'rel'=>$ue->id));
+		}
+		return $actions;
+	}
 }
 
-/**
- * Given a course_module object, this function returns any
- * "extra" information that may be needed when printing
- * this activity in a course listing.
- * See get_array_of_activities() in course/lib.php
- *
- * @global object
- * @param object $coursemodule
- * @return cached_cm_info|null
- */
-function description_get_coursemodule_info($coursemodule) {
-    global $DB, $CFG;
-
-    if ($desc = $DB->get_record('description', array('id' => $coursemodule->instance), 'id, name, intro, introformat, course')) {
-        if (empty($desc->name)) {
-            /*description name missing, fix it*/
-            $desc->name = "description{$desc->id}";
-            $DB->set_field('description', 'name', $desc->name, array('id' => $desc->id));
-        }
-        $info = new cached_cm_info();
-
-        $course = $DB->get_record("course", array("id" => $desc->course));
-        /*no filtering hre because this info is cached and filtered later*/
-        $coursecontext = context_course::instance($desc->course, MUST_EXIST);
-
-        $summary = $course->summary;
-        $desc->intro = '<p><link rel="stylesheet" type="text/css" href="'.$CFG->wwwroot.'/mod/description/static/style.css" /></p>
-        <div class="course_description"><h1><span lang="de" class="multilang">'.$course->fullname.'</span></h1>'.$summary.'</div>';
-
-        $module = 'description';
-        $activity = $desc;
-        $context = context_module::instance($coursemodule->id);
-        $options = array('noclean' => true, 'para' => false, 'filter' => false, 'context' => $context, 'overflowdiv' => true);
-        $intro = file_rewrite_pluginfile_urls($activity->intro, 'pluginfile.php', $coursecontext->id, 'course', 'summary', null);
-        $info->content = trim(format_text($intro, $activity->introformat, $options, null));
-
-        $info->name  = $desc->name;
-        return $info;
-    } else {
-        return null;
-    }
+function getAllEnrolment($id = null){
+	global $DB;
+	global $CFG;
+	if($id){
+		$userenrolments = $DB->get_records_sql('select ue.userid,ue.id,u.firstname,u.lastname,u.email,u.picture,c.fullname as course,ue.timecreated from '.$CFG->prefix.'user_enrolments as ue left join '.$CFG->prefix.'user as u on ue.userid=u.id left join '.$CFG->prefix.'enrol as e on ue.enrolid=e.id left join '.$CFG->prefix.'course as c on e.courseid=c.id where ue.status=1 and e.courseid='.$id);
+	}else{
+		$userenrolments = $DB->get_records_sql('select ue.id,ue.userid,u.firstname,u.lastname,u.email,u.picture,c.fullname as course,ue.timecreated from '.$CFG->prefix.'user_enrolments as ue left join '.$CFG->prefix.'user as u on ue.userid=u.id left join '.$CFG->prefix.'enrol as e on ue.enrolid=e.id left join '.$CFG->prefix.'course as c on e.courseid=c.id where ue.status=1');
+	}
+	return $userenrolments;
 }
 
-/**
- * @return array
- */
-function description_get_view_actions() {
-    return array();
+function confirmEnrolment($enrols){
+	global $DB;
+	global $CFG;
+	foreach ($enrols as $enrol){
+		@$enroluser->id = $enrol;
+		@$enroluser->status = 0;
+
+		if($DB->update_record('user_enrolments',$enroluser)){
+			$userenrolments = $DB->get_record_sql('select * from '.$CFG->prefix.'user_enrolments where id='.$enrol);
+			$role = $DB->get_record_sql("select * from ".$CFG->prefix."role where archetype='student' limit 1");
+			@$roleAssignments->userid = $userenrolments->userid;
+			@$roleAssignments->roleid = $role->id;
+			@$roleAssignments->contextid = 3;
+			@$roleAssignments->timemodified = time();
+			@$roleAssignments->modifierid = 2;
+			$DB->insert_record('role_assignments',$roleAssignments);
+			$info = getRelatedInfo($enrol);
+			sendConfirmMail($info);
+		}
+	}
 }
 
-/**
- * @return array
- */
-function description_get_post_actions() {
-    return array();
+function cancelEnrolment($enrols){
+	global $DB;
+	foreach ($enrols as $enrol){
+		$info = getRelatedInfo($enrol);
+		if($DB->delete_records('user_enrolments',array('id'=>$enrol))){
+			sendCancelMail($info);
+		}
+	}
 }
 
-/**
- * This function is used by the reset_course_userdata function in moodlelib.
- *
- * @param object $data the data submitted from the reset course.
- * @return array status array
- */
-function description_reset_userdata($data) {
-    return array();
+function sendCancelMail($info){
+	global $DB;
+	global $CFG;
+	$apply_setting = $DB->get_records_sql("select name,value from ".$CFG->prefix."config_plugins where plugin='enrol_apply'");
+
+	$replace = array('firstname'=>$info->firstname,'content'=>format_string($info->coursename),'lastname'=>$info->lastname,'username'=>$info->username);
+	$body = $apply_setting['cancelmailcontent']->value;
+	$body = updateMailContent($body,$replace);
+	$contact = core_user::get_support_user();
+	email_to_user($info, $contact, $apply_setting['cancelmailsubject']->value, html_to_text($body), $body);
 }
 
-/**
- * Returns all other caps used in module
- *
- * @return array
- */
-function description_get_extra_capabilities() {
-    return array('moodle/site:accessallgroups');
+function sendConfirmMail($info){
+	global $DB;
+	global $CFG;
+	$apply_setting = $DB->get_records_sql("select name,value from ".$CFG->prefix."config_plugins where plugin='enrol_apply'");
+
+	$replace = array('firstname'=>$info->firstname,'content'=>format_string($info->coursename),'lastname'=>$info->lastname,'username'=>$info->username);
+	$body = $apply_setting['confirmmailcontent']->value;
+	$body = updateMailContent($body,$replace);
+	$contact = core_user::get_support_user();
+	email_to_user($info, $contact, $apply_setting['confirmmailsubject']->value, html_to_text($body), $body);
 }
 
-/**
- * @uses FEATURE_IDNUMBER
- * @uses FEATURE_GROUPS
- * @uses FEATURE_GROUPINGS
- * @uses FEATURE_GROUPMEMBERSONLY
- * @uses FEATURE_MOD_INTRO
- * @uses FEATURE_COMPLETION_TRACKS_VIEWS
- * @uses FEATURE_GRADE_HAS_GRADE
- * @uses FEATURE_GRADE_OUTCOMES
- * @param string $feature FEATURE_xx constant for requested feature
- * @return bool|null True if module supports feature, false if not, null if doesn't know
- */
-function description_supports($feature) {
-    switch ($feature) {
-        case FEATURE_IDNUMBER:{
-            return false;
-        }
-        case FEATURE_GROUPS:{
-            return false;
-        }
-        case FEATURE_GROUPINGS:{
-            return false;
-        }
-        case FEATURE_GROUPMEMBERSONLY:{
-            return true;
-        }
-        case FEATURE_MOD_INTRO:{
-            return false;
-        }
-        case FEATURE_COMPLETION_TRACKS_VIEWS:{
-            return false;
-        }
-        case FEATURE_GRADE_HAS_GRADE:{
-            return false;
-        }
-        case FEATURE_GRADE_OUTCOMES:{
-            return false;
-        }
-        case FEATURE_MOD_ARCHETYPE:{
-            return MOD_ARCHETYPE_RESOURCE;
-        }
-        case FEATURE_BACKUP_MOODLE2:{
-            return true;
-        }
-        case FEATURE_NO_VIEW_LINK:{
-            return true;
-        }
-        default:{
-            return null;
-        }
-    }
+function sendConfirmMailToTeachers($courseid,$instanceid,$info,$applydescription){
+	global $DB;
+	global $CFG;
+	global $USER;
+	$apply_setting = $DB->get_records_sql("select name,value from ".$CFG->prefix."config_plugins where plugin='enrol_apply'");
+	
+	if($apply_setting['sendmailtoteacher']->value == 1){
+		$course = get_course($courseid);
+		$context =  context_course::instance($courseid, MUST_EXIST);
+		$teacherType = $DB->get_record('role',array("shortname"=>"editingteacher"));
+		$teachers = $DB->get_records('role_assignments', array('contextid'=>$context->id,'roleid'=>$teacherType->id));
+		foreach($teachers as $teacher){
+			$editTeacher = $DB->get_record('user',array('id'=>$teacher->userid));
+			$body = '<p>'. get_string('coursename', 'enrol_apply') .': '.format_string($course->fullname).'</p>';
+			$body .= '<p>'. get_string('applyuser', 'enrol_apply') .': '.$info->firstname.' '.$info->lastname.'</p>';
+			$body .= '<p>'. get_string('comment', 'enrol_apply') .': '.$applydescription.'</p>';
+
+			$body .= '<p><strong>'. get_string('user_profile', 'enrol_apply').'</strong></p>';
+			$body .= '<p>'. get_string('firstname') .': '.$info->firstname.'</p>';
+			$body .= '<p>'. get_string('lastname') .': '.$info->lastname.'</p>';
+			$body .= '<p>'. get_string('email') .': '.$info->email.'</p>';
+			$body .= '<p>'. get_string('city') .': '.$info->city.'</p>';
+			$body .= '<p>'. get_string('country') .': '.$info->country.'</p>';
+			$body .= '<p>'. get_string('preferredlanguage') .': '.$info->lang.'</p>';
+			$body .= '<p>'. get_string('description') .': '.$info->description_editor['text'].'</p>';
+
+			$body .= '<p>'. get_string('firstnamephonetic') .': '.$info->firstnamephonetic.'</p>';
+			$body .= '<p>'. get_string('lastnamephonetic') .': '.$info->lastnamephonetic.'</p>';
+			$body .= '<p>'. get_string('middlename') .': '.$info->middlename.'</p>';
+			$body .= '<p>'. get_string('alternatename') .': '.$info->alternatename.'</p>';
+			$body .= '<p>'. get_string('url') .': '.$info->url.'</p>';
+			$body .= '<p>'. get_string('icqnumber') .': '.$info->icq.'</p>';
+			$body .= '<p>'. get_string('skypeid') .': '.$info->skype.'</p>';
+			$body .= '<p>'. get_string('aimid') .': '.$info->aim.'</p>';
+			$body .= '<p>'. get_string('yahooid') .': '.$info->yahoo.'</p>';
+			$body .= '<p>'. get_string('msnid') .': '.$info->msn.'</p>';
+			$body .= '<p>'. get_string('idnumber') .': '.$info->idnumber.'</p>';
+			$body .= '<p>'. get_string('institution') .': '.$info->institution.'</p>';
+			$body .= '<p>'. get_string('department') .': '.$info->department.'</p>';
+			$body .= '<p>'. get_string('phone') .': '.$info->phone1.'</p>';
+			$body .= '<p>'. get_string('phone2') .': '.$info->phone2.'</p>';
+			$body .= '<p>'. get_string('address') .': '.$info->address.'</p>';
+
+			$body .= '<p>'. html_writer::link(new moodle_url("/enrol/apply/apply.php", array('id'=>$courseid,'enrolid'=>$instanceid)), get_string('applymanage', 'enrol_apply')).'</p>';
+			$contact = core_user::get_support_user();
+			$info = $editTeacher;
+			$info->coursename = $course->fullname;
+			email_to_user($info, $contact, get_string('mailtoteacher_suject', 'enrol_apply'), html_to_text($body), $body);
+		}
+	}
+}
+
+function sendConfirmMailToManagers($courseid,$info,$applydescription){
+	global $DB;
+	global $CFG;
+	global $USER;
+	$apply_setting = $DB->get_records_sql("select name,value from ".$CFG->prefix."config_plugins where plugin='enrol_apply'");
+
+	if($apply_setting['sendmailtomanager']->value == 1){
+		$course = get_course($courseid);
+		$context = context_system::instance();
+		$managerType = $DB->get_record('role',array("shortname"=>"manager"));
+		$managers = $DB->get_records('role_assignments', array('contextid'=>$context->id,'roleid'=>$managerType->id));
+		foreach($managers as $manager){
+			$userWithManagerRole = $DB->get_record('user',array('id'=>$manager->userid));
+			$body = '<p>'. get_string('coursename', 'enrol_apply') .': '.format_string($course->fullname).'</p>';
+			$body .= '<p>'. get_string('applyuser', 'enrol_apply') .': '.$info->firstname.' '.$info->lastname.'</p>';
+			$body .= '<p>'. get_string('comment', 'enrol_apply') .': '.$applydescription.'</p>';
+			$body .= '<p><strong>'. get_string('user_profile', 'enrol_apply').'</strong></p>';
+			$body .= '<p>'. get_string('firstname') .': '.$info->firstname.'</p>';
+			$body .= '<p>'. get_string('lastname') .': '.$info->lastname.'</p>';
+			$body .= '<p>'. get_string('email') .': '.$info->email.'</p>';
+			$body .= '<p>'. get_string('city') .': '.$info->city.'</p>';
+			$body .= '<p>'. get_string('country') .': '.$info->country.'</p>';
+			$body .= '<p>'. get_string('preferredlanguage') .': '.$info->lang.'</p>';
+			$body .= '<p>'. get_string('description') .': '.$info->description_editor['text'].'</p>';
+
+			$body .= '<p>'. get_string('firstnamephonetic') .': '.$info->firstnamephonetic.'</p>';
+			$body .= '<p>'. get_string('lastnamephonetic') .': '.$info->lastnamephonetic.'</p>';
+			$body .= '<p>'. get_string('middlename') .': '.$info->middlename.'</p>';
+			$body .= '<p>'. get_string('alternatename') .': '.$info->alternatename.'</p>';
+			$body .= '<p>'. get_string('url') .': '.$info->url.'</p>';
+			$body .= '<p>'. get_string('icqnumber') .': '.$info->icq.'</p>';
+			$body .= '<p>'. get_string('skypeid') .': '.$info->skype.'</p>';
+			$body .= '<p>'. get_string('aimid') .': '.$info->aim.'</p>';
+			$body .= '<p>'. get_string('yahooid') .': '.$info->yahoo.'</p>';
+			$body .= '<p>'. get_string('msnid') .': '.$info->msn.'</p>';
+			$body .= '<p>'. get_string('idnumber') .': '.$info->idnumber.'</p>';
+			$body .= '<p>'. get_string('institution') .': '.$info->institution.'</p>';
+			$body .= '<p>'. get_string('department') .': '.$info->department.'</p>';
+			$body .= '<p>'. get_string('phone') .': '.$info->phone1.'</p>';
+			$body .= '<p>'. get_string('phone2') .': '.$info->phone2.'</p>';
+			$body .= '<p>'. get_string('address') .': '.$info->address.'</p>';
+			$body .= '<p>'. html_writer::link(new moodle_url('/enrol/apply/manage.php'), get_string('applymanage', 'enrol_apply')).'</p>';
+			$contact = core_user::get_support_user();
+			$info = $userWithManagerRole;
+			$info->coursename = $course->fullname;
+			email_to_user($info, $contact, get_string('mailtoteacher_suject', 'enrol_apply'), html_to_text($body), $body);
+		}
+	}
+}
+
+function getRelatedInfo($enrolid){
+	global $DB;
+	global $CFG;
+	return $DB->get_record_sql('select u.*,c.fullname as coursename from '.$CFG->prefix.'user_enrolments as ue left join '.$CFG->prefix.'user as u on ue.userid=u.id left join '.$CFG->prefix.'enrol as e on ue.enrolid=e.id left
+	join '.$CFG->prefix.'course as c on e.courseid=c.id where ue.id='.$enrolid);
+}
+
+function updateMailContent($content,$replace){
+	foreach ($replace as $key=>$val) {
+		$content = str_replace("{".$key."}",$val,$content);
+	}
+	return $content;
 }
