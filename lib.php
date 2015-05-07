@@ -128,8 +128,7 @@ function description_get_coursemodule_info($coursemodule) {
         $coursecontext = context_course::instance($desc->course, MUST_EXIST);
 
         $summary = $course->summary;
-        $desc->intro = '<p><link rel="stylesheet" type="text/css" href="'.$CFG->wwwroot.'/mod/description/static/style.css" /></p>
-        <div class="course_description"><h1><span lang="de" class="multilang">'.$course->fullname.'</span></h1>'.$summary.'</div>';
+        $desc->intro = '<div><h1><span lang="de" class="multilang">'.$course->fullname.'</span></h1>'.$summary.'</div>';
 
         $module = 'description';
         $activity = $desc;

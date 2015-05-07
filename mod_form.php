@@ -47,10 +47,7 @@ class mod_description_mod_form extends moodleform_mod {
         $this->current->introeditor['text'] = '';
         $mform = $this->_form;
 
-        $mform->addElement('html', '<script src="'.$CFG->wwwroot.'/mod/description/static/jquery.min.js"></script>');
-        $stylehtml = '<link rel="stylesheet" type="text/css" href="'.$CFG->wwwroot.'/mod/description/static/style.css">';
-        $mform->addElement('html', $stylehtml);
-        $mform->addElement('html', '<div class="course_description"><h1>'.$course->fullname.'</h1>'.$coursesummary.'</div>');
+        $mform->addElement('html', '<div><h1>'.$course->fullname.'</h1>'.$coursesummary.'</div>');
         $this->standard_coursemodule_elements();
         $this->add_action_buttons(true, false, null);
     }
