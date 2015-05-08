@@ -121,14 +121,11 @@ function description_get_coursemodule_info($coursemodule) {
             $DB->set_field('description', 'name', $desc->name, array('id' => $desc->id));
         }
         $info = new cached_cm_info();
-
-        //$course = $DB->get_record("course", array("id" => $desc->course));
-        $course = $COURSE;
         /*no filtering hre because this info is cached and filtered later*/
         $coursecontext = context_course::instance($desc->course, MUST_EXIST);
 
-        $summary = $course->summary;
-        $desc->intro = '<div><h1><span lang="de" class="multilang">'.$course->fullname.'</span></h1>'.$summary.'</div>';
+        $summary = $COURSE->summary;
+        $desc->intro = '<div><h1>'.$COURSE->fullname.'</h1>'.$summary.'</div>';
 
         $module = 'description';
         $activity = $desc;

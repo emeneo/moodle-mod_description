@@ -51,5 +51,3 @@ function xmldb_description_upgrade($oldversion) {
     $dbman = $DB->get_manager();
     return true;
 }
-
-

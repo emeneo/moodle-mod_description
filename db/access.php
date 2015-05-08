@@ -25,7 +25,6 @@
 defined('MOODLE_INTERNAL') || die();
 
 $capabilities = array(
-
     'mod/description:addinstance' => array(
         'riskbitmask' => RISK_XSS,
 
@@ -37,5 +36,4 @@ $capabilities = array(
         ),
         'clonepermissionsfrom' => 'moodle/course:manageactivities'
     ),
-
 );
