@@ -25,9 +25,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2015041300;       // The current module version (Date: YYYYMMDDXX)
+$plugin->version   = 2015050801;    // The current module version (Date: YYYYMMDDXX)
 $plugin->requires  = 2013050100;    // Requires this Moodle version
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = 'Course description plugin 2.8e';
+$plugin->release = 'Course description plugin 2.8f';
 $plugin->component = 'mod_description'; // Full name of the plugin (used for diagnostics)
 $plugin->cron      = 0;
