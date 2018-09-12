@@ -123,7 +123,7 @@ function description_get_coursemodule_info($coursemodule) {
         $info = new cached_cm_info();
         /*no filtering hre because this info is cached and filtered later*/
         $coursecontext = context_course::instance($desc->course, MUST_EXIST);
-
+        $COURSE = $DB->get_record('course',array('id'=> $coursemodule->course));
         $summary = $COURSE->summary;
         $desc->intro = '<div><h1>'.$COURSE->fullname.'</h1>'.$summary.'</div>';
 
