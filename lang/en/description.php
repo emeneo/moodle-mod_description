@@ -42,3 +42,4 @@ $string['modulenameplural'] = 'Course description';
 $string['pluginadministration'] = 'Course description administration';
 $string['pluginname'] = 'Course description';
 $string['description:addinstance'] = 'Add a new course description';
+$string['privacy:metadata'] = 'The Description resource only displays the course description.';
