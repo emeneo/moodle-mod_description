@@ -17,13 +17,13 @@
 /**
  * Library of functions and constants for module description
  *
- * @package    mod
- * @subpackage description
+ * @package    mod_description
  * @copyright  emeneo
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once("../../config.php");
+require_course_login($course, true);  // New because of chode check.
 require_once("lib.php");
 
 $id = required_param('id', PARAM_INT);

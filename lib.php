@@ -17,8 +17,7 @@
 /**
  * Library of functions and constants for module description
  *
- * @package    mod
- * @subpackage description
+ * @package    mod_description
  * @copyright  emeneo
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -29,7 +28,10 @@ defined('MOODLE_INTERNAL') || die;
 define("DESCRIPTION_MAX_NAME_LENGTH", 50);
 
 require_once("$CFG->libdir/filelib.php");
+
 /**
+ * Get description name fct
+ *
  * @uses DESCRIPTION_MAX_NAME_LENGTH
  * @param object $desc
  * @return string
@@ -44,7 +46,6 @@ function get_description_name($desc) {
  * will create a new instance and return the id number
  * of the new instance.
  *
- * @global object
  * @param object $desc
  * @return bool|int
  */
@@ -62,7 +63,6 @@ function description_add_instance($desc) {
  * (defined by the form in mod_form.php) this function
  * will update an existing instance with new data.
  *
- * @global object
  * @param object $desc
  * @return bool
  */
@@ -82,7 +82,6 @@ function description_update_instance($desc) {
  * this function will permanently delete the instance
  * and any data that depends on it.
  *
- * @global object
  * @param int $id
  * @return bool
  */
@@ -108,7 +107,6 @@ function description_delete_instance($id) {
  * this activity in a course listing.
  * See get_array_of_activities() in course/lib.php
  *
- * @global object
  * @param object $coursemodule
  * @return cached_cm_info|null
  */
@@ -123,7 +121,7 @@ function description_get_coursemodule_info($coursemodule) {
         $info = new cached_cm_info();
         /*no filtering hre because this info is cached and filtered later*/
         $coursecontext = context_course::instance($desc->course, MUST_EXIST);
-        $COURSE = $DB->get_record('course',array('id'=> $coursemodule->course));
+        $COURSE = $DB->get_record('course', array('id' => $coursemodule->course));
         $summary = $COURSE->summary;
         $desc->intro = '<div><h1>'.$COURSE->fullname.'</h1>'.$summary.'</div>';
 
@@ -142,6 +140,8 @@ function description_get_coursemodule_info($coursemodule) {
 }
 
 /**
+ * Get view actions
+ *
  * @return array
  */
 function description_get_view_actions() {
@@ -149,6 +149,8 @@ function description_get_view_actions() {
 }
 
 /**
+ * Get post actions
+ *
  * @return array
  */
 function description_get_post_actions() {
@@ -175,6 +177,8 @@ function description_get_extra_capabilities() {
 }
 
 /**
+ * Function description supports
+ *
  * @uses FEATURE_IDNUMBER
  * @uses FEATURE_GROUPS
  * @uses FEATURE_GROUPINGS

@@ -15,21 +15,28 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package moodlecore
- * @subpackage backup-moodle2
+ *
+ * restore stepslib
+ *
+ * @package mod_description
  * @copyright emeneo
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 /**
+ *
+ * Restore strucutre class
+ *
  * Define all the restore steps that will be used by the restore_url_activity_task
  */
-
+class restore_description_activity_structure_step extends restore_activity_structure_step {
+	
 /**
+ * 
+ * Restore structure function
+ * 
  * Structure step to restore one description activity
  */
-class restore_description_activity_structure_step extends restore_activity_structure_step {
-
     protected function define_structure() {
 
         $paths = array();
@@ -38,7 +45,15 @@ class restore_description_activity_structure_step extends restore_activity_struc
         /*Return the paths wrapped into standard activity structure*/
         return $this->prepare_activity_structure($paths);
     }
-
+	
+/**
+ * 
+ * Process description function
+ *
+ * Function to describe process_description
+ * @param array $data
+ * 
+ */
     protected function process_description($data) {
         global $DB;
 
@@ -51,7 +66,11 @@ class restore_description_activity_structure_step extends restore_activity_struc
         /*immediately after inserting "activity" record, call this*/
         $this->apply_activity_instance($newitemid);
     }
-
+/**
+ * 
+ * After execute function
+ * 
+ */
     protected function after_execute() {
         /*Add description related files, no need to match by itemname (just internally handled context)*/
         $this->add_related_files('mod_description', 'intro', null);

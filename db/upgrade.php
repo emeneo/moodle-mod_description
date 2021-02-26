@@ -17,8 +17,7 @@
 /**
  * Description module upgrade
  *
- * @package    mod
- * @subpackage description
+ * @package    mod_description
  * @copyright  emeneo
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -45,6 +44,20 @@
 
 defined('MOODLE_INTERNAL') || die;
 
+/**
+ * Upgrade
+ *
+ * @package    mod_description
+ * @copyright  emeneo
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */ 
+ 
+ /**
+ * mod_description upgrade function.
+ *
+ * @param int $oldversion Old version.
+ * @return true
+ */
 function xmldb_description_upgrade($oldversion) {
     global $CFG, $DB;
 

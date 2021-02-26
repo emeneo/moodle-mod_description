@@ -17,8 +17,7 @@
 /**
  * Add description form
  *
- * @package    mod
- * @subpackage description
+ * @package    mod_description
  * @copyright  emeneo
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -28,7 +27,15 @@ defined('MOODLE_INTERNAL') || die;
 require_once($CFG->dirroot.'/course/moodleform_mod.php');
 require_once("$CFG->libdir/filelib.php");
 
+/**
+ * The description form class
+ *
+ */
 class mod_description_mod_form extends moodleform_mod {
+	/**
+ * The description form fct
+ *
+ */
     public function definition() {
         global $CFG, $DB;
 

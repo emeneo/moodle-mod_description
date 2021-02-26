@@ -17,17 +17,16 @@
 /**
  * Description module version info
  *
- * @package    mod
- * @subpackage description
+ * @package    mod_description
  * @copyright  emeneo
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2021022200;    // The current module version (Date: YYYYMMDDXX)
-$plugin->requires  = 2013050100;    // Requires at least this Moodle version
+$plugin->version   = 2021022200;
+$plugin->requires  = 2013050100;
 $plugin->maturity = MATURITY_STABLE;
 $plugin->release = 'Course description plugin 3.9-a';
-$plugin->component = 'mod_description'; // Full name of the plugin (used for diagnostics)
+$plugin->component = 'mod_description';
 $plugin->cron      = 0;

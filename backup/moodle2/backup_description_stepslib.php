@@ -15,21 +15,24 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package    mod
- * @subpackage description
+ * backup stepslib
+ *
+ * @package    mod_description
+ * @category   backup
  * @copyright  emeneo
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die;
+
 /**
  * Define all the backup steps that will be used by the backup_description_activity_task
  */
-
-/**
- * Define the complete description structure for backup, with file and id annotations
- */
 class backup_description_activity_structure_step extends backup_activity_structure_step {
-
+	
+    /**
+     * Define the complete description structure for backup, with file and id annotations
+     */
     protected function define_structure() {
 
         /*To know if we are including userinfo*/

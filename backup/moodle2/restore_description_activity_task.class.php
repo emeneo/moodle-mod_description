@@ -15,8 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package moodlecore
- * @subpackage backup-moodle2
+ *
+ * restore activity task
+ *
+ * @package   mod_description
  * @copyright emeneo
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -26,6 +28,9 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/mod/description/backup/moodle2/restore_description_stepslib.php'); /*Because it exists (must)*/
 
 /**
+ *
+ * mod_description restore class
+ *
  * description restore task that provides all the settings and steps to perform one
  * complete restore of the activity
  */

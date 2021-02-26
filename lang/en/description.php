@@ -17,8 +17,7 @@
 /**
  * Strings for component 'course description', language 'en', branch 'MOODLE_20_STABLE'
  *
- * @package    mod
- * @subpackage course description
+ * @package    mod_description
  * @copyright  emeneo
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
