@@ -32,10 +32,10 @@ require_once("$CFG->libdir/filelib.php");
  *
  */
 class mod_description_mod_form extends moodleform_mod {
-	/**
- * The description form fct
- *
- */
+   /**
+    * The description form fct
+    *
+    */
     public function definition() {
         global $CFG, $DB;
 

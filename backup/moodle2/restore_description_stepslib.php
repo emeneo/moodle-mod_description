@@ -29,8 +29,8 @@
  *
  * Define all the restore steps that will be used by the restore_url_activity_task
  */
-class restore_description_activity_structure_step extends restore_activity_structure_step {
-	
+    class restore_description_activity_structure_step extends restore_activity_structure_step {
+
 /**
  * 
  * Restore structure function
@@ -45,7 +45,7 @@ class restore_description_activity_structure_step extends restore_activity_struc
         /*Return the paths wrapped into standard activity structure*/
         return $this->prepare_activity_structure($paths);
     }
-	
+
 /**
  * 
  * Process description function
@@ -66,6 +66,7 @@ class restore_description_activity_structure_step extends restore_activity_struc
         /*immediately after inserting "activity" record, call this*/
         $this->apply_activity_instance($newitemid);
     }
+
 /**
  * 
  * After execute function

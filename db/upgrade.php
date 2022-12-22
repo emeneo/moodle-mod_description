@@ -52,7 +52,7 @@ defined('MOODLE_INTERNAL') || die;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */ 
  
- /**
+/**
  * mod_description upgrade function.
  *
  * @param int $oldversion Old version.
