@@ -123,7 +123,8 @@ function description_get_coursemodule_info($coursemodule) {
         $coursecontext = context_course::instance($desc->course, MUST_EXIST);
         $COURSE = $DB->get_record('course', array('id' => $coursemodule->course));
         $summary = $COURSE->summary;
-        $desc->intro = '<div><h1>'.$COURSE->fullname.'</h1>'.$summary.'</div>';
+        //$desc->intro = '<div><h1>'.$COURSE->fullname.'</h1>'.$summary.'</div>';
+        $desc->intro = '<div>'.$summary.'</div>';
 
         $module = 'description';
         $activity = $desc;
