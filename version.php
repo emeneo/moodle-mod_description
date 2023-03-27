@@ -24,9 +24,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2022120800;
+$plugin->version   = 2023032700;
 $plugin->requires  = 2013050100;
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = 'Course description plugin 4.1-b';
+$plugin->release = 'Course description plugin 4.1-c';
 $plugin->component = 'mod_description';
 $plugin->cron      = 0;
