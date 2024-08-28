@@ -40,14 +40,13 @@ class mod_description_mod_form extends moodleform_mod {
         global $CFG, $DB;
 
         $update = optional_param('update', 0, PARAM_INT);
-        if (@$update != '') {
+        if (@$update != '' && @$update > 0) {
             $cm = get_coursemodule_from_id('', $update, 0, false, MUST_EXIST);
             $courseid = $cm->course;
         } else {
             $courseid = optional_param('course', 0, PARAM_INT);
         }
         $course = $DB->get_record("course", array("id" => $courseid));
-
         $context = context_course::instance($courseid, MUST_EXIST);
         $coursesummary = file_rewrite_pluginfile_urls($course->summary, 'pluginfile.php', $context->id, 'course', 'summary', null);
 
